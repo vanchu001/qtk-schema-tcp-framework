@@ -1,24 +1,26 @@
 const Server = require('@qtk/tcp-framework').Server;
-const Schema = require('../common/schema');
+const Validator = require('../validator');
 const EventEmitter = require('events').EventEmitter;
 
 module.exports = class extends EventEmitter {
-    constructor({host, port, schemaDir}) {
+    constructor({host, port, validator}) {
         super();
         this._server = new Server({host, port});
-        this._schema = new Schema(schemaDir);
+        this._validator = validator;
         
         this._server.on("data", (socket, {uuid, buffer}) => {
-            let json = undefined;
+            let payload = undefined;
             try {
-                json = JSON.parse(buffer.toString('utf8'));
-                this._schema.validate(json.command, json.payload);
+                payload = JSON.parse(buffer.toString('utf8'));
+                if (this._validator instanceof Validator) {
+                    this._validator.check(payload);
+                }
             }
             catch(err) {
                 this.emit('exception', socket, err);
                 return;
             }
-            this.emit('data', socket, {uuid, command: json.command, payload: json.payload});
+            this.emit('data', socket, {uuid, payload});
         });
 
         this._server.on("started", () => {this.emit("started");});
@@ -36,7 +38,7 @@ module.exports = class extends EventEmitter {
 		this._server.stop();
 	}
 
-	send(socket, {uuid, command, payload}) {
-        this._server.send(socket, {uuid, buffer: Buffer.from(JSON.stringify({command, payload}), 'utf8')});
+	send(socket, {uuid, payload}) {
+        this._server.send(socket, {uuid, buffer: Buffer.from(JSON.stringify(payload), 'utf8')});
 	}
 }
