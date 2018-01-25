@@ -11,12 +11,12 @@ module.exports = class extends EventEmitter {
         this._client.on('exception', err => {
             this.emit('exception', err);
         });
-        this._client.on('data', ({uuid, buffer}) => {
-            let payload = undefined;
+        this._client.on('data', ({uuid, data}) => {
+            let json = undefined;
             try {
-                payload = JSON.parse(buffer.toString('utf8'));
+                json = JSON.parse(data.toString('utf8'));
                 if (this._validator instanceof Validator) {
-                    this._validator.check(payload);
+                    this._validator.check(json);
                 }
             }
             catch(err) {
@@ -24,11 +24,11 @@ module.exports = class extends EventEmitter {
                 return;
             }
 
-            this.emit('data', {uuid, payload});
+            this.emit('data', {uuid, data:json});
         });
     }
 
-    send({uuid, payload}) {
-        this._client.send({uuid, buffer: Buffer.from(JSON.stringify(payload), 'utf8')});
+    send({uuid, data}) {
+        this._client.send({uuid, data: Buffer.from(JSON.stringify(data), 'utf8')});
 	}
 }

@@ -6,10 +6,10 @@ const uuid = require('uuid/v4');
 const port = 3005;
 
 class TestValidator extends Validator {
-    check(payload) {
-        const ss = new SemanticSchema(require(`${__dirname}/schema/${payload.command}`));
-        if (!ss.validate(payload.data)) {
-            throw new Error(`invalid payload`);
+    check(data) {
+        const ss = new SemanticSchema(require(`${__dirname}/schema/${data.command}`));
+        if (!ss.validate(data.data)) {
+            throw new Error(`invalid data`);
         }
     }
 }
@@ -17,10 +17,10 @@ class TestValidator extends Validator {
 const validator = new TestValidator();
 const server = new Server({port, validator});
 server.on('exception', (socket, err) => console.log(err));
-server.on('data', function (socket, {uuid, payload}) {
-    switch(payload.command) {
+server.on('data', function (socket, {uuid, data}) {
+    switch(data.command) {
         case "echo":
-            this.send(socket, {uuid, payload});
+            this.send(socket, {uuid, data});
             break;
         default:
             break;
@@ -35,13 +35,13 @@ describe("#schema-tcp-framework", function() {
     it('should return [hello]', function (done) {
         const msgid = uuid().replace(/-/g, '');
         const client = new Client({port, validator});
-        client.on('data', ({uuid, payload}) => {
-            if ((payload.command !== 'echo') || (payload.data !== 'hello')) {
+        client.on('data', ({uuid, data}) => {
+            if ((data.command !== 'echo') || (data.data !== 'hello')) {
                 done(new Error('response mismatch'));
                 return;
             }
             done();
         });
-        client.send({uuid: msgid, payload: {command: 'echo', data: 'hello'}});
+        client.send({uuid: msgid, data: {command: 'echo', data: 'hello'}});
     });
 });

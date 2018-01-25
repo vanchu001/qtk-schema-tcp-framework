@@ -8,19 +8,19 @@ module.exports = class extends EventEmitter {
         this._server = new Server({host, port});
         this._validator = validator;
         
-        this._server.on("data", (socket, {uuid, buffer}) => {
-            let payload = undefined;
+        this._server.on("data", (socket, {uuid, data}) => {
+            let json = undefined;
             try {
-                payload = JSON.parse(buffer.toString('utf8'));
+                json = JSON.parse(data.toString('utf8'));
                 if (this._validator instanceof Validator) {
-                    this._validator.check(payload);
+                    this._validator.check(json);
                 }
             }
             catch(err) {
                 this.emit('exception', socket, err);
                 return;
             }
-            this.emit('data', socket, {uuid, payload});
+            this.emit('data', socket, {uuid, data:json});
         });
 
         this._server.on("started", () => {this.emit("started");});
@@ -38,7 +38,7 @@ module.exports = class extends EventEmitter {
 		this._server.stop();
 	}
 
-	send(socket, {uuid, payload}) {
-        this._server.send(socket, {uuid, buffer: Buffer.from(JSON.stringify(payload), 'utf8')});
+	send(socket, {uuid, data}) {
+        this._server.send(socket, {uuid, data: Buffer.from(JSON.stringify(data), 'utf8')});
 	}
 }
