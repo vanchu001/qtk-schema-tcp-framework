@@ -2,12 +2,23 @@ const EventEmitter = require('events').EventEmitter;
 const Client = require('@qtk/tcp-framework').Client;
 const Validator = require('../validator');
 
+/*============events & params===========*/
+/*
+    connected => ()
+    closed => ()
+	execption => (error)
+	data => ({uuid, data})
+}
+*/
+
 module.exports = class extends EventEmitter {
     constructor({host, port, validator}) {
         super();
         this._client = new Client({host, port});
         this._validator = validator;
 
+        this._client.on('connected', () => { this.emit('connected'); });
+        this._client.on('closed', () => { this.emit('closed'); });
         this._client.on('exception', err => {
             this.emit('exception', err);
         });
