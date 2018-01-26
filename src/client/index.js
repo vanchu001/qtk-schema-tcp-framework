@@ -23,19 +23,17 @@ module.exports = class extends EventEmitter {
             this.emit('exception', err);
         });
         this._client.on('data', ({uuid, data}) => {
-            let json = undefined;
             try {
-                json = JSON.parse(data.toString('utf8'));
+                const json = JSON.parse(data.toString('utf8'));
                 if (this._validator instanceof Validator) {
                     this._validator.check(json);
                 }
+                this.emit('data', {uuid, data:json});
             }
             catch(err) {
                 this.emit('exception', err);
                 return;
             }
-
-            this.emit('data', {uuid, data:json});
         });
     }
 
