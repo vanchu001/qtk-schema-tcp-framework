@@ -39,5 +39,9 @@ module.exports = class extends EventEmitter {
 
     send({uuid, data}) {
         this._client.send({uuid, data: Buffer.from(JSON.stringify(data), 'utf8')});
-	}
+    }
+    
+    close() {
+        this._client.close();
+    }
 }
