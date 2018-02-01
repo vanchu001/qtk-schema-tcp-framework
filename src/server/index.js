@@ -12,7 +12,7 @@ module.exports = class extends EventEmitter {
             try {
                 const json = JSON.parse(data.toString('utf8'));
                 if (this._validator instanceof Validator) {
-                    this._validator.check(json);
+                    this._validator.check(uuid, json);
                 }
                 this.emit('data', socket, {uuid, data:json});
             }

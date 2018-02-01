@@ -6,7 +6,7 @@ const uuid = require('uuid/v4');
 const port = 3005;
 
 class TestValidator extends Validator {
-    check(data) {
+    check(uuid, data) {
         const ss = new SemanticSchema(require(`${__dirname}/schema/${data.command}`));
         if (!ss.validate(data.data)) {
             throw new Error(`invalid data`);
@@ -42,6 +42,9 @@ describe("#schema-tcp-framework", function() {
             }
             done();
         });
+        client.on('exception', (err) => {
+            console.log(err);
+        })
         client.send({uuid: msgid, data: {command: 'echo', data: 'hello'}});
     });
 });
