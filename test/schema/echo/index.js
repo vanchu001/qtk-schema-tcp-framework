@@ -1,3 +1,6 @@
-const {object, string, integer} = require('semantic-schema').describer;
+const {object, string, integer} = require('@qtk/schema').schema;
 
-module.exports = string().desc("echo字符串");
+module.exports = {
+    request: string().desc("echo字符串"),
+    response: string()
+}

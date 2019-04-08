@@ -1,15 +1,22 @@
 const Server = require('../src/server');
 const Client = require('../src/client');
 const Validator = require('../src/validator');
-const SemanticSchema = require('semantic-schema').validator;
+const SemanticSchema = require('@qtk/schema').validator;
 const uuid = require('uuid/v4');
 const port = 3005;
 
 class TestValidator extends Validator {
-    check(uuid, data) {
-        const ss = new SemanticSchema(require(`${__dirname}/schema/${data.command}`));
+    requestCheck(uuid, data) {
+        const ss = SemanticSchema.from(require(`${__dirname}/schema/${data.command}`).request);
         if (!ss.validate(data.data)) {
-            throw new Error(`invalid data`);
+            throw new Error(`invalid request data`);
+        }
+    }
+
+    responseCheck(uuid, data) {
+        const ss = SemanticSchema.from(require(`${__dirname}/schema/${data.command}`).response);
+        if (!ss.validate(data.data)) {
+            throw new Error(`invalid response data`);
         }
     }
 }
